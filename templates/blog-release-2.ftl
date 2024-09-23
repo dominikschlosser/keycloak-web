@@ -5,14 +5,10 @@
     <#include "../${version.releaseNotes}">
 </#if>
 
-<h2>Migration from ${versionPrevious.versionShorter}</h2>
-<p>Before you upgrade remember to backup your database. If you are not on the previous release refer to <a href="${home}/docs/latest/upgrading/index.html#migration-changes">the documentation</a> for a complete list of migration changes.</p>
+<h2>Upgrading</h2>
+<p>Before upgrading refer to <a href="${home}/docs/latest/upgrading/index.html#migration-changes">the migration guide</a> for a complete list of changes.</p>
 
-<#if version.migrationNotes??>
-    <#include "../${version.migrationNotes}">
-</#if>
-
-<#if version.changes??>
+<#if version.changes?? && version.changes.all?has_content>
 <h2>All resolved issues</h2>
 
 <#if version.changes.deprecations?has_content>
@@ -52,6 +48,3 @@
 </#if>
 
 </#if>
-
-<h2>Upgrading</h2>
-<p>Before you upgrade remember to backup your database and check the <a href="${home}/docs/latest/upgrading/index.html">upgrade guide</a> for anything that may have changed.</p>

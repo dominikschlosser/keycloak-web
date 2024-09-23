@@ -14,8 +14,11 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 public class ChangelogBuilder extends AbstractBuilder {
 
@@ -37,24 +40,38 @@ public class ChangelogBuilder extends AbstractBuilder {
                 }))
                 .withOAuthToken(token).build();
 
-        File changelogCache = new File(context.getCacheDir(), "changelogs");
-        changelogCache.mkdirs();
+        File releasesCache = new File(context.getCacheDir(), "releases");
 
         for (Versions.Version v : context.versions()) {
-            String fileName = "changelog-" + v.getVersion().replace(".", "_") + ".json";
-            File changeLogFile = new File(changelogCache, fileName);
+            File releaseCacheDir = new File(releasesCache, v.getVersion());
+            releaseCacheDir.mkdirs();
+
+            File changeLogFile = new File(releaseCacheDir, "changelog.json");
 
             if (changeLogFile.exists()) {
                 Versions.ChangeLog changeLog = new Versions.ChangeLog(Arrays.asList(context.json().read(changeLogFile, ChangeLogEntry[].class)));
+
+                if (v.getBlogTemplate() >= 3) {
+                    for (ChangeLogEntry e : changeLog.getAll()) {
+                        if (!e.getRepository().equals("keycloak")) {
+                            String area = e.getRepository().replaceAll("keycloak-", "");
+                            e.setArea(area);
+                        }
+                    }
+                }
+
                 v.setChanges(changeLog);
                 printStep("exists", v.getVersion());
             } else {
-                if (Integer.parseInt(v.getBlogTemplate()) >= 2) {
-                    List<GHIssue> ghIssues = gh.searchIssues().q("user:keycloak milestone:" + v.getVersion() + " is:closed is:issue").isClosed().list().toList();
+                if (v.getBlogTemplate() >= 2) {
+                    Map<Integer, GHIssue> ghIssues = new HashMap<>();
+
+                    gh.searchIssues().q("user:keycloak milestone:" + v.getVersion() + " is:closed is:issue").isClosed().list().forEach(i -> ghIssues.put(i.getNumber(), i));
+                    gh.searchIssues().q("user:keycloak label:release/" + v.getVersion() + " is:closed is:issue").isClosed().list().forEach(i -> ghIssues.put(i.getNumber(), i));
 
                     List<ChangeLogEntry> changes = new LinkedList<>();
 
-                    for (GHIssue issue : ghIssues) {
+                    for (GHIssue issue : ghIssues.values()) {
                         ChangeLogEntry change = new ChangeLogEntry();
                         change.setNumber(issue.getNumber());
                         change.setRepository(issue.getRepository().getName());
@@ -104,13 +121,11 @@ public class ChangelogBuilder extends AbstractBuilder {
         }
 
         try {
-            Process process = Runtime.getRuntime().exec("gh auth status -t");
-            BufferedReader ir = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+            Process process = Runtime.getRuntime().exec("gh auth token");
+            process.waitFor(60, TimeUnit.SECONDS);
+            BufferedReader ir = new BufferedReader(new InputStreamReader(process.getInputStream()));
             for (String l = ir.readLine(); l != null; l = ir.readLine()) {
-                if (l.contains("Token:")) {
-                    printStep("token", "Using token from GitHub command line");
-                    return l.split(": ")[1];
-                }
+                return l.trim();
             }
             process.destroy();
         } catch (Exception e) {

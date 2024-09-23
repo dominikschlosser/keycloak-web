@@ -1,7 +1,8 @@
-<#macro page current title noindex=false nocsp=false>
+<#macro page current title noindex=false nocsp=false rss=false>
 <!doctype html>
 <html lang="en">
 <head>
+<#compress>
     <meta charset="utf-8"/>
     <title><#if (title)?has_content>${title} - </#if>Keycloak</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -16,20 +17,25 @@
     <link href="${links.getResource('bootstrap/dist/css/bootstrap.min.css')}" rel="stylesheet">
     <link href="${links.getResource('@fortawesome/fontawesome-free/css/all.min.css')}" rel="stylesheet">
     <link href="${links.getResource('css/keycloak.css')}" rel="stylesheet">
+    <link rel="canonical" href="${ canonical }">
 
     <link rel="shortcut icon" href="${links.getResource('favicon.ico')}">
 
     <script src="${links.getResource('js/ga.js')}" type="text/javascript"></script>
     <script src="${links.getResource('bootstrap/dist/js/bootstrap.min.js')}" type="text/javascript"></script>
     <script src="${links.getResource('tocbot/dist/tocbot.min.js')}" type="text/javascript"></script>
+    <#if rss><link rel="alternate" type="application/rss+xml" title="Keycloak's Blog" href="${links.getRss()}"></#if>
+</#compress>
 </head>
 <body>
 
 <header class="navbar navbar-expand-md bg-light shadow-sm">
 <nav class="container-xxl flex-wrap flex-md-no-wrap navbar-light">
-    <a class="navbar-brand me-5" href="${links.home}">
-        <img class="img-fluid" src="${links.getResource('images/keycloak_logo_200px.svg')}" width="240" alt="Keycloak"/>
+    <a class="navbar-brand me-3 me-md-4 me-lg-5" href="${links.home}">
+        <img class="img-fluid" src="${links.getResource('images/logo.svg')}" width="240" alt="Keycloak"/>
     </a>
+    <a class="nav-link d-none d-sm-block d-md-none d-lg-block" href="https://github.com/keycloak/keycloak"><img src="https://img.shields.io/github/stars/keycloak/keycloak?label=GitHub%20Stars" style="height: 25px" alt="GitHub stars"/></a>
+    <a class="nav-link d-block d-sm-none d-md-block d-lg-none" href="https://github.com/keycloak/keycloak"><img src="https://img.shields.io/github/stars/keycloak/keycloak?label=" style="height: 25px" alt="GitHub stars"/></a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
       <span class="fa fa-bars fa-lg px-1 py-2"></span>
     </button>
@@ -57,14 +63,13 @@
 
 <#nested>
 
-<div class="container">
-    <footer class="d-flex flex-wrap justify-content-between align-items-center pt-2 mt-3 mb-3">
-        <div class="col-md-4 d-flex align-items-center">
-            <span class="text-muted me-3">Sponsored by</span>
-            <a href="http://www.redhat.com/" target="_blank" class="">
-                <img alt="Red Hat" src="${links.getResource('images/Logo-RedHat-A-Standard-RGB.svg')}" width="100">
-            </a>
+<div class="container mt-5">
+    <footer class="py-3 my-4 border-top">
+        <p class="text-center text-muted">Keycloak is a Cloud Native Computing Foundation incubation project</p>
+        <div class="text-center">
+            <img alt="Cloud Native Computing Foundation" src="${links.getResource('images/cncf_logo.png')}"/>
         </div>
+        <p class="mt-4 text-center small text-muted">&copy; Keycloak Authors 2024. &copy; 2024 The Linux Foundation. All rights reserved. The Linux Foundation has registered trademarks and uses trademarks. For a list of trademarks of The Linux Foundation, please see our <a href="https://www.linuxfoundation.org/trademark-usage">Trademark Usage page</a>.</p>
     </footer>
 </div>
 
